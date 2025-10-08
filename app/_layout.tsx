@@ -1,18 +1,27 @@
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { initializeDatabase } from '@/database/client';
 
 export default function RootLayout() {
   useFrameworkReady();
   const [dbInitialized, setDbInitialized] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const setupDatabase = async () => {
-      const success = await initializeDatabase();
-      setDbInitialized(success);
+      try {
+        console.log('Initializing database...');
+        const success = await initializeDatabase();
+        console.log('Database initialized:', success);
+        setDbInitialized(true);
+      } catch (error: any) {
+        console.error('Database setup error:', error);
+        setError(error?.message || 'Failed to initialize database');
+        setDbInitialized(true);
+      }
     };
 
     setupDatabase();
@@ -23,6 +32,7 @@ export default function RootLayout() {
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#10B981" />
         <Text style={styles.loadingText}>Initializing Database...</Text>
+        {error && <Text style={styles.errorText}>{error}</Text>}
       </View>
     );
   }
@@ -49,5 +59,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginTop: 16,
     fontSize: 16,
+  },
+  errorText: {
+    color: '#EF4444',
+    marginTop: 8,
+    fontSize: 14,
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
 });

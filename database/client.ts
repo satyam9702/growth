@@ -2,7 +2,14 @@ import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { openDatabaseSync } from 'expo-sqlite';
 import * as schema from './schema';
 
-const expoDb = openDatabaseSync('productivity.db', { enableChangeListener: true });
+let expoDb: any;
+
+try {
+  expoDb = openDatabaseSync('productivity.db', { enableChangeListener: true });
+} catch (error) {
+  console.error('Failed to open database:', error);
+  expoDb = openDatabaseSync('productivity.db');
+}
 
 export const db = drizzle(expoDb, { schema });
 
